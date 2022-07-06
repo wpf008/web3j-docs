@@ -11,8 +11,14 @@ import java.util.concurrent.ExecutionException;
 
 public class LocalProviders {
 
+
+    public static Web3j buildWeb3j() {
+        Web3j localWeb3j = Web3j.build(new HttpService("http://127.0.0.1:7545"));
+        return localWeb3j;
+    }
+
     public static void main(String[] args) {
-        Web3j web3j = Web3j.build(new HttpService("http://127.0.0.1:7545"));
+        Web3j web3j = buildWeb3j();
         try {
             EthAccounts ethAccounts = web3j.ethAccounts().sendAsync().get();
             List<String> accounts = ethAccounts.getAccounts();
