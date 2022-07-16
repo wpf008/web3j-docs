@@ -1,0 +1,7 @@
+./web3j solidity generate /Users/wpf/Desktop/web3j-docs/fuxk-web3-sample/src/main/resources/helloworld.bin /Users/wpf/Desktop/web3j-docs/fuxk-web3-sample/src/main/resources/helloworld.abi -o /Users/wpf/Desktop/web3j-docs/fuxk-web3-sample/src/main/java -p com.fuxk.quickstart.contract
+
+
+
+
+
+./web3j solidity generate /Users/wpf/Desktop/web3j-docs/fuxk-web3-sample/src/main/resources/function.bin /Users/wpf/Desktop/web3j-docs/fuxk-web3-sample/src/main/resources/function.abi -o /Users/wpf/Desktop/web3j-docs/fuxk-web3-sample/src/main/java -p com.fuxk.quickstart
