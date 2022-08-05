@@ -138,7 +138,10 @@ public class CreateTokenService {
             System.out.println(transactions.toString());
             System.out.println("=====交易完成===== txHash is " + transactions.getTransactionHash());
 //            System.out.println("=====交易完成===== RawResponse is " + transactions.getRawResponse());
-//            System.out.println("=====交易失败===== error is " + transactions.getError().getMessage());
+            if(transactions.getError()!=null){
+                System.out.println("=====交易失败===== error is " + transactions.getError().getMessage());
+            }
+
             NftTransactionRecord nftTransactionRecord = new NftTransactionRecord();
             nftTransactionRecord.setTxHash(transactions.getTransactionHash());
             nftTransactionRecord.setPaymentAddress(credentials.getAddress());

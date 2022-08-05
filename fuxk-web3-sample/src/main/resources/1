@@ -1,0 +1,1 @@
+curl -H "Content-Type: application/json" -X POST -d '[{"jsonrpc":"2.0","method":"cfx_call","params":[{"from":null,"to":"cfx:acc370g3s6d56ndcp8t6gyc657rhtp0fz6ytc8j9d2","gasPrice":null,"gas":null,"value":null,"data":"0x0e89341c0000000000000000000000000000000000000000000000000000000000002625","nonce":null,"storageLimit":null}],"id":0}]' "http://main.confluxrpc.com"
