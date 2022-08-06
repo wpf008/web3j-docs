@@ -1,5 +1,9 @@
 package com.fuxk.tx;
 
+import com.fuxk.tx.event.AllEvent;
+import com.fuxk.tx.event.BaseEvent;
+import com.fuxk.tx.event.ERC1155Event;
+import com.fuxk.tx.response.TransferBatchEventResponse;
 import org.web3j.abi.EventEncoder;
 import org.web3j.abi.EventValues;
 import org.web3j.abi.FunctionReturnDecoder;
@@ -42,58 +46,25 @@ public class TestErc1155 {
         TransactionReceipt transactionReceipt = polygon
                 .ethGetTransactionReceipt("0x56f1550e5bd19913de4b4d369226f4b84f152bdf454964d45f3f45b61a4cde95")
                 .send().getResult();
-
-
         List<Log> logs = transactionReceipt.getLogs();
         for (Log log : logs) {
             List<String> topics = log.getTopics();
             if (topics.size() > 0) {
                 String topic = topics.get(0);
                 if (transfer_batch_topic.equals(topic)) {
-                    EventValues eventValues = staticExtractEventParameters(Erc1155.TRANSFERBATCH_EVENT, log);
-                    Erc1155.TransferBatchEventResponse typedResponse = new Erc1155.TransferBatchEventResponse();
-                    typedResponse.operator = (String) eventValues.getIndexedValues().get(0).getValue();
-                    typedResponse.from = (String) eventValues.getIndexedValues().get(1).getValue();
-                    typedResponse.to = (String) eventValues.getIndexedValues().get(2).getValue();
-                    System.out.println(typedResponse);
+                    TransferBatchEventResponse transferBatchEvents = AllEvent.getTransferBatchEvent(log);
+                    System.out.println(transferBatchEvents);
+                    List<BigInteger> ids = transferBatchEvents.ids;
+                    List<BigInteger> values = transferBatchEvents.values;
+                    for(int i=0;i<transferBatchEvents.ids.size();i++){
+                        System.out.println(ids.get(i));
+                        System.out.println(values.get(i));
+                    }
+
                 }
             }
         }
-
-
-//        List<EventValuesWithLog> eventValuesWithLogs = extractEventParametersWithLog(Erc1155.TRANSFERBATCH_EVENT, transactionReceipt);
-//        ArrayList<Erc1155.TransferBatchEventResponse> responses = new ArrayList<Erc1155.TransferBatchEventResponse>(eventValuesWithLogs.size());
-//        for (EventValuesWithLog eventValues : eventValuesWithLogs) {
-//            Erc1155.TransferBatchEventResponse typedResponse = new Erc1155.TransferBatchEventResponse();
-//            typedResponse.log = eventValues.getLog();
-//            typedResponse.operator = (String) eventValues.getIndexedValues().get(0).getValue();
-//            typedResponse.from = (String) eventValues.getIndexedValues().get(1).getValue();
-//            typedResponse.to = (String) eventValues.getIndexedValues().get(2).getValue();
-//            typedResponse.ids = (List<BigInteger>) eventValues.getNonIndexedValues().get(0).getValue();
-//            typedResponse.values = (List<BigInteger>) eventValues.getNonIndexedValues().get(1).getValue();
-//            responses.add(typedResponse);
-//        }
-//        for (Erc1155.TransferBatchEventResponse respons : responses) {
-//            System.out.println(respons);
-//        }
     }
 
-
-    public static EventValues staticExtractEventParameters(Event event, Log log) {
-        List<String> topics = log.getTopics();
-        String encodedEventSignature = EventEncoder.encode(event);
-        if (topics != null && topics.size() != 0 && ((String) topics.get(0)).equals(encodedEventSignature)) {
-            List<Type> indexedValues = new ArrayList();
-            List<Type> nonIndexedValues = FunctionReturnDecoder.decode(log.getData(), event.getNonIndexedParameters());
-            List<TypeReference<Type>> indexedParameters = event.getIndexedParameters();
-            for (int i = 0; i < indexedParameters.size(); ++i) {
-                Type value = FunctionReturnDecoder.decodeIndexedValue((String) topics.get(i + 1), (TypeReference) indexedParameters.get(i));
-                indexedValues.add(value);
-            }
-            return new EventValues(indexedValues, nonIndexedValues);
-        } else {
-            return null;
-        }
-    }
 
 }

@@ -1,5 +1,7 @@
 package com.fuxk.tx;
 
+import com.fuxk.tx.event.AllEvent;
+import com.fuxk.tx.response.TransferSingleEventResponse;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.methods.response.Log;
@@ -30,11 +32,15 @@ public class Test {
     private final static String rarible_match_order_topic = "0x268820db288a211986b26a8fda86b1e0046281b21206936bb0e61c67b5c79ef4";
     private final static String matic_topic = "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63";
 
+    private final static String matic_opensea_method_id = "0xbbbfa60c";
+
+
+    private final static String zeroAddress = "0x0000000000000000000000000000000000000000";
+
 
     public static void main(String[] args) {
         try {
             BigInteger blockNumber = polygon.ethBlockNumber().send().getBlockNumber();//获取当前区块
-
             blockNumber = BigInteger.valueOf(31533747L);
             BigInteger transactionCount = polygon.ethGetBlockTransactionCountByNumber(DefaultBlockParameter.valueOf(blockNumber)).send().getTransactionCount(); //获取当前区块的数量
             System.out.println("blockNumber is :" + blockNumber);
@@ -75,6 +81,7 @@ public class Test {
                 String method = "";
                 if ("0".equals(status)) {//交易失败
                     maticTransactionFlowRecord.setMethod("Transfer");
+                    //todo 插入数据
                 } else {
                     List<Log> logs = transactionReceipt.getLogs();
 
@@ -82,14 +89,29 @@ public class Test {
                         if ("0x".equals(input) && !value.equals(BigInteger.ZERO)) {
                             maticTransactionFlowRecord.setContractAddress("");
                             maticTransactionFlowRecord.setMethod("Transfer");
+                            //todo 插入数据
                         }
                         for (Log log : logs) {
                             contractAddress = log.getAddress().toLowerCase();
                             method = "Contract Interaction";
                             List<String> topics = log.getTopics();
+
                             if (topics.size() > 0) {
                                 String topic = topics.get(0);
+                                if (matic_topic.equals(topic))
+                                    continue;
                                 if (transfer_single_topic.equals(topic)) {
+                                    TransferSingleEventResponse transferSingleEvent = AllEvent.getTransferSingleEvent(log);
+                                    String contract_to = transferSingleEvent.getTo().toLowerCase();
+                                    String contract_from = transferSingleEvent.getFrom().toLowerCase();
+                                    maticTransactionFlowRecord.setFrom(contract_to.toLowerCase());
+                                    maticTransactionFlowRecord.setTo(contract_from.toLowerCase());
+                                    maticTransactionFlowRecord.setContractTo(contract_to);
+                                    maticTransactionFlowRecord.setContractFrom(contract_from);
+
+
+
+
                                 }
                             }
                         }
