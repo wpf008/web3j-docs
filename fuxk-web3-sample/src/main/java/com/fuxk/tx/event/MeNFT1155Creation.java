@@ -92,8 +92,8 @@ public class MeNFT1155Creation {
         response.setOperator((String) eventValues.getIndexedValues().get(0).getValue());
         response.setFrom((String) eventValues.getIndexedValues().get(1).getValue());
         response.setTo((String) eventValues.getIndexedValues().get(2).getValue());
-        response.setIds((List<BigInteger>) eventValues.getNonIndexedValues().get(0).getValue());
-        response.setValues((List<BigInteger>) eventValues.getNonIndexedValues().get(1).getValue());
+        response.setIds((List<Uint256>) eventValues.getNonIndexedValues().get(0).getValue());
+        response.setValues((List<Uint256>) eventValues.getNonIndexedValues().get(1).getValue());
         return response;
     }
 

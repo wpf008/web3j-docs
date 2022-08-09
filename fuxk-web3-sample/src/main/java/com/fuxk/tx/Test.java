@@ -1,7 +1,8 @@
 package com.fuxk.tx;
 
 import com.fuxk.tx.event.AllEvent;
-import com.fuxk.tx.response.TransferSingleEventResponse;
+import com.fuxk.tx.response.*;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.methods.response.Log;
@@ -62,7 +63,7 @@ public class Test {
                 maticTransactionFlowRecord.setFrom(transaction.getFrom().toLowerCase());
                 maticTransactionFlowRecord.setTo(transaction.getTo().toLowerCase());
                 maticTransactionFlowRecord.setGasPrice(transaction.getGasPrice());
-                maticTransactionFlowRecord.setTxhash(transaction.getHash());
+                maticTransactionFlowRecord.setTxHash(transaction.getHash());
                 maticTransactionFlowRecord.setValue(transaction.getValue());
                 System.out.println(maticTransactionFlowRecord);
                 String methodId = "0x";
@@ -83,48 +84,115 @@ public class Test {
                     maticTransactionFlowRecord.setMethod("Transfer");
                     //todo 插入数据
                 } else {
+                    //解析logs
                     List<Log> logs = transactionReceipt.getLogs();
-
-                    if (logs != null && logs.size() > 0) { //todo 判空
+                    if (logs != null && logs.size() > 0) { //todo 判空逻辑重新
                         if ("0x".equals(input) && !value.equals(BigInteger.ZERO)) {
                             maticTransactionFlowRecord.setContractAddress("");
                             maticTransactionFlowRecord.setMethod("Transfer");
                             //todo 插入数据
                         }
                         for (Log log : logs) {
-                            contractAddress = log.getAddress().toLowerCase();
+                            contractAddress = log.getAddress().toLowerCase();//合约地址
                             method = "Contract Interaction";
-                            List<String> topics = log.getTopics();
-
+                            List<String> topics = log.getTopics();//topic
                             if (topics.size() > 0) {
                                 String topic = topics.get(0);
                                 if (matic_topic.equals(topic))
                                     continue;
                                 if (transfer_single_topic.equals(topic)) {
-                                    TransferSingleEventResponse transferSingleEvent = AllEvent.getTransferSingleEvent(log);
-                                    String contract_to = transferSingleEvent.getTo().toLowerCase();
-                                    String contract_from = transferSingleEvent.getFrom().toLowerCase();
-                                    maticTransactionFlowRecord.setFrom(contract_to.toLowerCase());
-                                    maticTransactionFlowRecord.setTo(contract_from.toLowerCase());
-                                    maticTransactionFlowRecord.setContractTo(contract_to);
-                                    maticTransactionFlowRecord.setContractFrom(contract_from);
-
-
-
+                                    try {
+                                        TransferSingleEventResponse transferSingleEvent = AllEvent.getTransferSingleEvent(log);
+                                        String contract_to = transferSingleEvent.getTo().toLowerCase();
+                                        String contract_from = transferSingleEvent.getFrom().toLowerCase();
+                                        maticTransactionFlowRecord.setFrom(contract_to.toLowerCase());
+                                        maticTransactionFlowRecord.setTo(contract_from.toLowerCase());
+                                        maticTransactionFlowRecord.setContractTo(contract_to);
+                                        maticTransactionFlowRecord.setContractFrom(contract_from);
+                                        maticTransactionFlowRecord.setContractValue(transferSingleEvent.getId().toString());
+                                        maticTransactionFlowRecord.setContractAmount(transferSingleEvent.getValue().toString());
+                                        if (zeroAddress.equals(contract_from))
+                                            method = "Mint";
+                                        if (zeroAddress.equals(contract_to))
+                                            method = "Burn";
+                                        if (matic_opensea_method_id.equals(methodId))
+                                            method = "Contract Interaction";
+                                        maticTransactionFlowRecord.setMethod(method);
+                                        maticTransactionFlowRecord.setTopic(transfer_single_topic);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                } else if (approval_topic.equals(topic)) {
+                                    try {
+                                        ApprovalEventResponse approvalEvent = AllEvent.getApprovalEvent(log);
+                                        String contract_to = approvalEvent.getSpender();
+                                        String contract_from = approvalEvent.getOwner();
+                                        method = "Approve";
+                                        maticTransactionFlowRecord.setFrom(contract_to.toLowerCase());
+                                        maticTransactionFlowRecord.setTo(contract_from.toLowerCase());
+                                        maticTransactionFlowRecord.setContractTo(contract_to);
+                                        maticTransactionFlowRecord.setContractFrom(contract_from);
+                                        maticTransactionFlowRecord.setTopic(approval_topic);
+                                        maticTransactionFlowRecord.setMethod(method);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                } else if (role_granted_topic.equals(topic)) {
+                                    try {
+                                        RoleGrantedEventResponse roleGrantedEvent = AllEvent.getRoleGrantedEvent(log);
+                                        String contract_to = roleGrantedEvent.getAccount();
+                                        String contract_from = roleGrantedEvent.getSender();
+                                        maticTransactionFlowRecord.setFrom(contract_to.toLowerCase());
+                                        maticTransactionFlowRecord.setTo(contract_from.toLowerCase());
+                                        maticTransactionFlowRecord.setContractTo(contract_to);
+                                        maticTransactionFlowRecord.setContractFrom(contract_from);
+                                        method = "Transfer Owner";
+                                        maticTransactionFlowRecord.setMethod(method);
+                                        maticTransactionFlowRecord.setTopic(role_granted_topic);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                } else if (transfer_batch_topic.equals(topic)) {
+                                    try {
+                                        TransferBatchEventResponse transferBatchEvent = AllEvent.getTransferBatchEvent(log);
+                                        String contract_to = transferBatchEvent.getTo();
+                                        String contract_from = transferBatchEvent.getFrom();
+                                        maticTransactionFlowRecord.setFrom(contract_to.toLowerCase());
+                                        maticTransactionFlowRecord.setTo(contract_from.toLowerCase());
+                                        maticTransactionFlowRecord.setContractTo(contract_to);
+                                        maticTransactionFlowRecord.setContractFrom(contract_from);
+                                        List<Uint256> ids = transferBatchEvent.getIds();
+                                        List<Uint256> values = transferBatchEvent.getValues();
+                                        method = "Transfer";
+                                        if (zeroAddress.equals(contract_from))
+                                            method = "Mint Batch";
+                                        if (zeroAddress.equals(contract_to))
+                                            method = "Burn";
+                                        if (matic_opensea_method_id.equals(methodId))
+                                            method = "Contract Interaction";
+                                        maticTransactionFlowRecord.setMethod(method);
+                                        maticTransactionFlowRecord.setTopic(role_granted_topic);
+                                        for (int j = 0; j < ids.size(); j++) {
+                                            BigInteger tokenId = ids.get(j).getValue();
+                                            BigInteger balance = values.get(j).getValue();
+                                            //todo
+                                        }
+                                    }catch (Exception e){
+                                    }
+                                }else if(transfer_topic.equals(topic)){
+                                    TransferEventResponse transferEvent = AllEvent.getTransferEvent(log);
 
                                 }
                             }
                         }
                     }
-
-
                 }
 
             }
         } catch (Exception e) {
             e.printStackTrace();
-
         }
-
     }
+
+
 }

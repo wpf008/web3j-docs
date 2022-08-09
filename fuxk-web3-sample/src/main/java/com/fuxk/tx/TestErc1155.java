@@ -10,6 +10,7 @@ import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Event;
 import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -54,11 +55,10 @@ public class TestErc1155 {
                 if (transfer_batch_topic.equals(topic)) {
                     TransferBatchEventResponse transferBatchEvents = AllEvent.getTransferBatchEvent(log);
                     System.out.println(transferBatchEvents);
-                    List<BigInteger> ids = transferBatchEvents.ids;
-                    List<BigInteger> values = transferBatchEvents.values;
+                    List<Uint256> ids = transferBatchEvents.ids;
+                    List<Uint256> values = transferBatchEvents.values;
                     for(int i=0;i<transferBatchEvents.ids.size();i++){
-                        System.out.println(ids.get(i));
-                        System.out.println(values.get(i));
+
                     }
 
                 }

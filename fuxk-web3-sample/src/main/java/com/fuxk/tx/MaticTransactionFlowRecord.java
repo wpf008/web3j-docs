@@ -18,11 +18,12 @@ public class MaticTransactionFlowRecord {
     private BigInteger gas;
     private BigInteger gasPrice;
     private BigInteger blockId;
-    private String txhash;
+    private String txHash;
     private String contractTo;
     private String contractFrom;
     private String contractAddress;
     private String contractValue;
+    private String contractAmount;
     private String method;
     private String status;
     private String topic;

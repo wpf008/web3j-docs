@@ -14,7 +14,7 @@ public class TransferBatchEventResponse {
 
     public String to;
 
-    public List<BigInteger> ids;
+    public List<Uint256> ids;
 
-    public List<BigInteger> values;
+    public List<Uint256> values;
 }
