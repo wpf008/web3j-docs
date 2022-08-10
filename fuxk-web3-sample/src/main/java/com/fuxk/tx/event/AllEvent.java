@@ -163,6 +163,18 @@ public class AllEvent {
             Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {
             }));
 
+    public static final Event CREATENFT721_EVENT = new Event("CreateNFT721",
+            Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {
+            }));
+
+
+    public static CreateNFT721EventResponse getCreateNFT721Event(Log log) {
+        EventValues eventValues = BaseEvent.staticExtractEventParameters(CREATENFT721_EVENT, log);
+        CreateNFT721EventResponse response = new CreateNFT721EventResponse();
+        response.setTokenAddress((String) eventValues.getNonIndexedValues().get(0).getValue());
+        return response;
+    }
+
 
     public static OrderApprovedPartOneEventResponse getOrderApprovedPartOneEvent(Log log) {
         EventValues eventValues = BaseEvent.staticExtractEventParameters(ORDERAPPROVEDPARTONE_EVENT, log);
@@ -225,7 +237,7 @@ public class AllEvent {
     }
 
 
-    public  static NonceIncrementedEventResponse getNonceIncrementedEvent(Log log) {
+    public static NonceIncrementedEventResponse getNonceIncrementedEvent(Log log) {
         EventValues eventValues = BaseEvent.staticExtractEventParameters(NONCEINCREMENTED_EVENT, log);
         NonceIncrementedEventResponse response = new NonceIncrementedEventResponse();
         response.maker = (String) eventValues.getIndexedValues().get(0).getValue();

@@ -41,8 +41,8 @@ public class Test {
 
     public static void main(String[] args) {
         try {
-            BigInteger blockNumber = polygon.ethBlockNumber().send().getBlockNumber();//获取当前区块
-            blockNumber = BigInteger.valueOf(31533747L);
+//            BigInteger blockNumber = polygon.ethBlockNumber().send().getBlockNumber();//获取当前区块
+            BigInteger  blockNumber = BigInteger.valueOf(31533747L);
             BigInteger transactionCount = polygon.ethGetBlockTransactionCountByNumber(DefaultBlockParameter.valueOf(blockNumber)).send().getTransactionCount(); //获取当前区块的数量
             System.out.println("blockNumber is :" + blockNumber);
             System.out.println("transactionCount is: " + transactionCount);
@@ -65,7 +65,7 @@ public class Test {
                 maticTransactionFlowRecord.setGasPrice(transaction.getGasPrice());
                 maticTransactionFlowRecord.setTxHash(transaction.getHash());
                 maticTransactionFlowRecord.setValue(transaction.getValue());
-                System.out.println(maticTransactionFlowRecord);
+
                 String methodId = "0x";
                 BigInteger value = transaction.getValue();
                 String input = transaction.getInput();
@@ -75,10 +75,6 @@ public class Test {
                 String status = transactionReceipt.getStatus();
                 maticTransactionFlowRecord.setStatus(status);
                 maticTransactionFlowRecord.setGas(transactionReceipt.getGasUsed());
-                String contractTo = "";
-                String contractFrom = "";
-                String contractValue = "";
-                String contractAddress = "";
                 String method = "";
                 if ("0".equals(status)) {//交易失败
                     maticTransactionFlowRecord.setMethod("Transfer");
@@ -93,7 +89,7 @@ public class Test {
                             //todo 插入数据
                         }
                         for (Log log : logs) {
-                            contractAddress = log.getAddress().toLowerCase();//合约地址
+                            String contractAddress = log.getAddress().toLowerCase();//合约地址
                             method = "Contract Interaction";
                             List<String> topics = log.getTopics();//topic
                             if (topics.size() > 0) {
@@ -177,22 +173,84 @@ public class Test {
                                             BigInteger balance = values.get(j).getValue();
                                             //todo
                                         }
-                                    }catch (Exception e){
+                                    } catch (Exception e) {
                                     }
-                                }else if(transfer_topic.equals(topic)){
-                                    TransferEventResponse transferEvent = AllEvent.getTransferEvent(log);
-
+                                } else if (transfer_topic.equals(topic)) {
+//                                    try {
+//                                        TransferEventResponse transferEvent = AllEvent.getTransferEvent(log);
+//                                        String contract_to = transferEvent.getTo();
+//                                        String contract_from = transferEvent.getFrom();
+//                                        String fr = contract_from.toLowerCase();
+//                                        String to = contract_to.toLowerCase();
+//                                        method = "Transfer";
+//                                        if (zeroAddress.equals(fr))
+//                                            method = "Mint";
+//                                        if (zeroAddress.equals(to))
+//                                            method = "Burn";
+//                                        if (matic_opensea_method_id.equals(methodId))
+//                                            method = "Contract Interaction";
+//
+//                                        String contract_value = "";
+//                                        if (transferEvent.getValue() != null) {
+//                                            contract_value = transferEvent.getValue().toString();
+//                                        } else {
+//                                            contract_value = transferEvent.getTokenId().toString();
+//                                        }
+//                                        maticTransactionFlowRecord.setFrom(contract_to.toLowerCase());
+//                                        maticTransactionFlowRecord.setTo(contract_from.toLowerCase());
+//                                        maticTransactionFlowRecord.setContractTo(contract_to);
+//                                        maticTransactionFlowRecord.setContractFrom(contract_from);
+//                                        maticTransactionFlowRecord.setMethod(method);
+//                                        maticTransactionFlowRecord.setTopic(transfer_topic);
+//                                        maticTransactionFlowRecord.setContractValue(contract_value);
+//
+//                                    } catch (Exception e) {
+//                                        e.printStackTrace();
+//                                    }
+                                } else if (create_token721_topic.equals(topic)) {
+                                    try {
+                                        CreateNFT721EventResponse createNFT721Event = AllEvent.getCreateNFT721Event(log);
+                                        String contract_address = createNFT721Event.getTokenAddress();
+                                        maticTransactionFlowRecord.setContractAddress(contract_address);
+                                        method = "Create Token 721";
+                                        maticTransactionFlowRecord.setMethod(method);
+                                        maticTransactionFlowRecord.setTopic(create_token721_topic);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                } else if (create_token1155_topic.equals(topic)) {
+                                    CreateNFT1155EventResponse createNFT1155Event = AllEvent.getCreateNFT1155Event(log);
+                                    String contract_address = createNFT1155Event.getTokenAddress();
+                                    maticTransactionFlowRecord.setContractAddress(contract_address);
+                                    method = "Create Token 1155";
+                                    maticTransactionFlowRecord.setMethod(method);
+                                    maticTransactionFlowRecord.setTopic(create_token1155_topic);
+                                } else if (migrate_topic.equals(topic)) {
+                                    try {
+                                        MigrateEventResponse migrateEvents = AllEvent.getMigrateEvents(log);
+                                        String contract_value = migrateEvents.getSnapshot_tokenId().toString();
+                                        method = "Migrate";
+                                        maticTransactionFlowRecord.setContractValue(contract_value);
+                                        maticTransactionFlowRecord.setMethod(method);
+                                        maticTransactionFlowRecord.setTopic(migrate_topic);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                } else {
+                                    method = "Transfer";
+                                    maticTransactionFlowRecord.setMethod(method);
                                 }
                             }
                         }
+                    } else {
+                        method = "Transfer";
+                        maticTransactionFlowRecord.setMethod(method);
                     }
                 }
-
+                System.out.println(maticTransactionFlowRecord);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-
 }

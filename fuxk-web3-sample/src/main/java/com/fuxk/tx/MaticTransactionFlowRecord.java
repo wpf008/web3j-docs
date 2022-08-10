@@ -14,19 +14,17 @@ public class MaticTransactionFlowRecord {
     private BigInteger time;
     private String from;
     private String to;
-    private BigInteger value;
     private BigInteger gas;
     private BigInteger gasPrice;
     private BigInteger blockId;
     private String txHash;
+    private BigInteger value;
     private String contractTo;
-    private String contractFrom;
-    private String contractAddress;
     private String contractValue;
     private String contractAmount;
+    private String contractFrom;
+    private String contractAddress;
     private String method;
     private String status;
     private String topic;
-
-
 }
