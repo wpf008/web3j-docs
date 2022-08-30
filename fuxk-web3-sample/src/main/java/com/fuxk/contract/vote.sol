@@ -87,7 +87,7 @@ contract vote {
                 winningProposal_ = p;
             }
         }
-        winnerName_ = proposals[winningVoteCount].proposalName;
+        winnerName_ = proposals[winningProposal_].proposalName;
     }
 
 
